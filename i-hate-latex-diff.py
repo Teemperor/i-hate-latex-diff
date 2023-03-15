@@ -2,15 +2,19 @@
 
 import argparse
 import os
+import filecmp
 import glob
 import shutil
 import sys
 import difflib
 import os.path as path
+from pathlib import Path
 
 
 def collect_latex_files(folder):
-    result = glob.glob("*.tex", root_dir=folder)
+    result = []
+    for path in Path(folder).rglob('*.tex'):
+        result.append(str(path.relative_to(folder)))
     return result
 
 
@@ -124,7 +128,9 @@ if __name__ == "__main__":
     parser.add_argument("new")
     parser.add_argument("output")
     parser.add_argument("--nodefine", action="store_true", default=False)
+    parser.add_argument("--verbose", action="store_true", default=False)
     args = parser.parse_args()
+    verbose = args.verbose
 
     if os.path.exists(args.output):
         if len(os.listdir(args.output)) != 0:
@@ -135,9 +141,22 @@ if __name__ == "__main__":
 
     expected = collect_latex_files(args.old)
     for latex_file in expected:
+        if verbose:
+            print("Processing " + latex_file)
         old_file = path.join(args.old, latex_file)
         new_file = path.join(args.new, latex_file)
-        new_content = make_latex_diff(get_lines(old_file), get_lines(new_file))
+
+        # Determine the new file contents.
+        new_content = None
+        if filecmp.cmp(old_file, new_file):
+            # If the files are equal, just read the file contents as-is.
+            if verbose:
+                print("Skipping equial files " + latex_file)
+            new_content = "".join(get_lines(new_file))
+        else:
+            # Otherwise do a proper diff on different file contents.
+            new_content = make_latex_diff(get_lines(old_file), get_lines(new_file))
+        # Inject the macro definitions for changes (unless disabled via a flag).
         if not args.nodefine:
             new_content = maybe_define_latex_macros(new_content)
         overwrite_contents(path.join(args.output, latex_file), new_content)
