@@ -4,6 +4,7 @@ import argparse
 import os
 import subprocess as sp
 import tempfile
+import shutil
 import os.path as path
 import sys
 
@@ -35,11 +36,15 @@ def run_test(directory):
         if len(os.listdir(tmpdir)) == 0:
             return "Output folder was empty"
 
+        expected_dir = path.join(directory, "expected")
         diff_result = sp.run(
-            ["diff", "-r", "-U1", tmpdir, directory + "/expected"], capture_output=True
+            ["diff", "-r", "-U1", tmpdir, expected_dir], capture_output=True
         )
         if diff_result.returncode == 0:
             return None
+        if args.fixup:
+            shutil.copytree(tmpdir, expected_dir, dirs_exist_ok=True)
+            return "Fixed up tests"
         return "Wrong output:\n" + diff_result.stdout.decode("utf-8")
 
 
