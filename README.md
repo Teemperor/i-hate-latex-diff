@@ -15,7 +15,14 @@ All `*.tex` files in the `original` and `new` folder will be compared.
 
 * `--nodefine`: Don't inject the default command definitions. You can add your own `removedChange` and `addedChange` definitions.
 
+* `--verbose`: Spam your stdout. Has useful information, but it also emulates
+the LaTeX behavior of spamming my f**** screen with millions of pointless
+warnings.
+
 ## FAQ
 
 * *Will this work on my paper?* - Probably no.
-* *What's wrong with latex-diff?* - I can't answer this here without exceeding the git file size limitations.
+* *What's wrong with latex-diff?* - I can't answer this here without exceeding
+the git file size limitations.
+* *Why is this README so salty?* - Because LaTeX was literally created in hell
+to punish humanity for creating the atom bomb or something like that.
