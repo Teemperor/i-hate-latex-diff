@@ -10,8 +10,12 @@ import difflib
 import os.path as path
 from pathlib import Path
 
-
+# 
 def collect_latex_files(folder):
+    """
+    Searches the folder for latex files. Returns their paths relative to the
+    specified folder.
+    """
     result = []
     for path in Path(folder).rglob('*.tex'):
         result.append(str(path.relative_to(folder)))
@@ -19,21 +23,27 @@ def collect_latex_files(folder):
 
 
 def get_lines(filename):
+    """ Returns all lines in the given file. """
     with open(filename) as f:
         return f.readlines()
 
 
 def overwrite_contents(filename, contents):
+    """ Overwrites the file contents of the given file. """
     with open(filename, "w") as f:
         return f.write(contents)
 
 
+# The macro that wraps additions.
 added_change_cmd = "\\addedChange{"
+# The macro that wraps removals.
 removed_change_cmd = "\\removedChange{"
+# How to terminate the macros above.
 cmd_end = "}"
 
 
 def surround_with_cmd(cmd, content):
+    """ Returns the given content wrapped in the given latex command. """
     if content.endswith("\n"):
         return cmd + content[:-1] + cmd_end + "\n"
     return cmd + content + cmd_end
@@ -57,9 +67,14 @@ def make_tokens(lines):
 
 
 def make_latex_diff(old, new):
+    """
+    Given two lists of lines, creates a string describing the latex source
+    code representing the 'new' changes with any differences highlighted.
+    """
+
     result = ""
 
-    # Turn the lines into a set of tokens.
+    # Turn the lines into a set of (space-delimited) tokens.
     old_tokens = make_tokens(old)
     new_tokens = make_tokens(new)
 
