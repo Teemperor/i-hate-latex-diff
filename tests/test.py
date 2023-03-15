@@ -14,11 +14,26 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 diff_path = script_dir + "/../i-hate-latex-diff.py"
 
 
-parser = argparse.ArgumentParser(
-    prog="test",
-    description="Runs the tests"
+class Color:
+    HEADER = "\033[95m"
+    BLUE = "\033[94m"
+    CYAN = "\033[96m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+    END = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+
+    PASS = BOLD + GREEN
+    FAIL = BOLD + RED
+
+
+parser = argparse.ArgumentParser(prog="test", description="Runs the tests")
+parser.add_argument(
+    "--fixup", action="store_true", help="Overwrites expected with current test results"
 )
-parser.add_argument("--fixup", action="store_true")
+parser.add_argument("--quiet", action="store_true", help="Hides verbose output")
 args = parser.parse_args()
 
 if len(tests) == 0:
@@ -30,7 +45,7 @@ if len(tests) == 0:
 def run_test(directory):
     with tempfile.TemporaryDirectory() as tmpdir:
         sp.check_call(
-            [diff_path, path.join(directory, "a"), path.join(directory, "b"), tmpdir]
+            [diff_path, "--nodefine", path.join(directory, "a"), path.join(directory, "b"), tmpdir]
         )
 
         if len(os.listdir(tmpdir)) == 0:
@@ -49,9 +64,12 @@ def run_test(directory):
 
 
 for test in tests:
-    sys.stdout.write("Running test " + test + ": ")
+    test_name = os.path.basename(test)
+    sys.stdout.write("Test " + test_name + ": ")
     error = run_test(test)
     if error:
-        print(error)
+        print(Color.FAIL + "FAIL" + Color.END)
+        if not args.quiet:
+            print(error)
     else:
-        print("OK")
+        print(Color.PASS + " OK " + Color.END)

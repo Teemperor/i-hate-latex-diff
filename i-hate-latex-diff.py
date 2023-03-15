@@ -23,14 +23,17 @@ def overwrite_contents(filename, contents):
     with open(filename, "w") as f:
         return f.write(contents)
 
+
 added_change_cmd = "\\addedChange{"
 removed_change_cmd = "\\removedChange{"
 cmd_end = "}"
+
 
 def surround_with_cmd(cmd, content):
     if content.endswith("\n"):
         return cmd + content[:-1] + cmd_end + "\n"
     return cmd + content + cmd_end
+
 
 def make_tokens(lines):
     """
@@ -48,10 +51,11 @@ def make_tokens(lines):
             result.append(tokens[-1])
     return result
 
+
 def make_latex_diff(old, new):
     result = ""
 
-    # Turn the lines into a set of tokens.    
+    # Turn the lines into a set of tokens.
     old_tokens = make_tokens(old)
     new_tokens = make_tokens(new)
 
@@ -60,10 +64,14 @@ def make_latex_diff(old, new):
     ignore_token = "IGNORE_THIS_LINE_BECAUSE_ITS_A_FILE_MARKER"
 
     # Create a diff that contains the whole file in the context.
-    diff = difflib.unified_diff(old_tokens, new_tokens, n=len(old) + len(new),
-                                fromfile=ignore_token,
-                                tofile=ignore_token, lineterm="")
-    
+    diff = difflib.unified_diff(
+        old_tokens,
+        new_tokens,
+        n=len(old) + len(new),
+        fromfile=ignore_token,
+        tofile=ignore_token,
+        lineterm="",
+    )
 
     for token in diff:
         # The first character is a diff marker such as '+', '-' or ' '.
@@ -95,6 +103,16 @@ def make_latex_diff(old, new):
 
     return result
 
+def maybe_define_latex_macros(content):
+    definitions = r"""
+\usepackage{xcolor}
+\usepackage[normalem]{ulem}
+\newcommand{\removedChange}[1]{\textcolor{red}{\sout{#1}}}
+\newcommand{\addedChange}[1]{\textcolor{blue}{\uwave{#1}}}
+    """
+    token = r"""\begin{document}"""
+
+    return content.replace(token, definitions + token)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -105,20 +123,21 @@ if __name__ == "__main__":
     parser.add_argument("old")
     parser.add_argument("new")
     parser.add_argument("output")
+    parser.add_argument("--nodefine", action="store_true", default=False)
     args = parser.parse_args()
 
     if os.path.exists(args.output):
         if len(os.listdir(args.output)) != 0:
-            print(
-                "Output folder " + args.output + " exists. Not going to overwrite this."
-            )
+            print("Output folder " + args.output + " exists.")
+            print("Not going to overwrite this.")
             sys.exit(1)
     shutil.copytree(args.new, args.output, dirs_exist_ok=True)
 
     expected = collect_latex_files(args.old)
     for latex_file in expected:
-        print("Inspecting " + latex_file)
         old_file = path.join(args.old, latex_file)
         new_file = path.join(args.new, latex_file)
         new_content = make_latex_diff(get_lines(old_file), get_lines(new_file))
+        if not args.nodefine:
+            new_content = maybe_define_latex_macros(new_content)
         overwrite_contents(path.join(args.output, latex_file), new_content)
