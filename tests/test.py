@@ -63,13 +63,18 @@ def run_test(directory):
         return "Wrong output:\n" + diff_result.stdout.decode("utf-8")
 
 
+had_error = False
 for test in tests:
     test_name = os.path.basename(test)
     sys.stdout.write("Test " + test_name + ": ")
     error = run_test(test)
     if error:
+        had_error = True
         print(Color.FAIL + "FAIL" + Color.END)
         if not args.quiet:
             print(error)
     else:
         print(Color.PASS + " OK " + Color.END)
+
+if had_error:
+    sys.exit(1)
