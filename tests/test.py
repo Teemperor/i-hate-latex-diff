@@ -63,6 +63,7 @@ def run_test(directory):
         return "Wrong output:\n" + diff_result.stdout.decode("utf-8")
 
 
+print("Running {num} tests".format(num=len(tests)))
 had_error = False
 for test in tests:
     test_name = os.path.basename(test)

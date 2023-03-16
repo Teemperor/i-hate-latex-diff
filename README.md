@@ -19,9 +19,20 @@ All `*.tex` files in the `original` and `new` folder will be compared.
 the LaTeX behavior of spamming my f**** screen with millions of pointless
 warnings.
 
+## Tests
+
+Simply run:
+
+```bash
+./tests/test.py
+```
+
+Each test dir has a `a` directory for the old version, `b` or the new version,
+and an `expected` directory for the expected output.
+
 ## FAQ
 
-* *Will this work on my paper?* - Probably no.
+* *Will this work on my paper?* - no.
 * *What's wrong with latex-diff?* - I can't answer this here without exceeding
 the git file size limitations.
 * *Why is this README so salty?* - Because LaTeX was literally created in hell
