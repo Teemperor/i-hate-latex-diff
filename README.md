@@ -17,7 +17,8 @@ easily diff the output folder to see what the tool has annotated.
 
 **Available flags:**
 
-* `--nodefine`: Don't inject the default command definitions. You can add your own `removedChange` and `addedChange` definitions.
+* `--nodefine`: Don't inject the default command definitions. You can add your
+own `removedChange` and `addedChange` definitions.
 
 * `--verbose`: Spam your stdout. Has useful information, but it also emulates
 the LaTeX behavior of spamming my f**** screen with millions of pointless
