@@ -67,7 +67,7 @@ print("Running {num} tests".format(num=len(tests)))
 had_error = False
 for test in tests:
     test_name = os.path.basename(test)
-    sys.stdout.write("Test " + test_name + ": ")
+    sys.stdout.write("• " + test_name + ": ")
     error = run_test(test)
     if error:
         had_error = True
