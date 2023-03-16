@@ -82,11 +82,14 @@ def make_latex_diff(old, new):
     # We can filter for this later.
     ignore_token = "IGNORE_THIS_LINE_BECAUSE_ITS_A_FILE_MARKER"
 
+    # Diff context should be large enough to always contain the whole document.
+    context = len(old_tokens) + len(new_tokens)
+
     # Create a diff that contains the whole file in the context.
     diff = difflib.unified_diff(
         old_tokens,
         new_tokens,
-        n=len(old) + len(new),
+        n=context,
         fromfile=ignore_token,
         tofile=ignore_token,
         lineterm="",

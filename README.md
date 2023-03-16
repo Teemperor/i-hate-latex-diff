@@ -2,14 +2,17 @@
 
 ![Status badge](https://github.com/Teemperor/i-hate-latex-diff/actions/workflows/python-app.yml/badge.svg)
 
-This is latex-diff but it at least works for my paper.
+This is a latex-diff reimplementation but it works with my own paper.
 
 ```bash
 ./i-hate-latex-diff.py original-folder new-folder output-folder
 ```
 
 All `*.tex` files in the `original` and `new` folder will be compared.
-`output` contains the same files except for the annotated changes. Afterwards just compile your paper with whatever cursed build system you're already suffering from.
+`output` contains the same files except for the annotated changes.
+Afterwards just compile your paper with whatever cursed build system you're
+already suffering from.
+Note that the changes are minimal
 
 **Available flags:**
 
