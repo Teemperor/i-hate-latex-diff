@@ -12,7 +12,7 @@ All `*.tex` files in the `original` and `new` folder will be compared.
 `output` contains the same files except for the annotated changes.
 Afterwards just compile your paper with whatever cursed build system you're
 already suffering from.
-Note that all other files and the directory structure is perserved, so you can
+Note that all other files and the directory structure is preserved, so you can
 easily diff the output folder to see what the tool has annotated.
 
 **Available flags:**
