@@ -42,7 +42,10 @@ removed_change_cmd = "\\removedChange{"
 cmd_end = "}"
 
 # minted will probably just print out injected code-as is, so ignore it.
-ignored_prefixes = ["\\mintinline"]
+ignored_prefixes = [
+  "\\mintinline",
+  "\\captionof",
+]
 
 def should_ignore_token(token : str) -> str:
     for prefix in ignored_prefixes:
