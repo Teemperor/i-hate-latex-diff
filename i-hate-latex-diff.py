@@ -41,6 +41,14 @@ removed_change_cmd = "\\removedChange{"
 # How to terminate the macros above.
 cmd_end = "}"
 
+# minted will probably just print out injected code-as is, so ignore it.
+ignored_prefixes = ["\\mintinline"]
+
+def should_ignore_token(token : str) -> str:
+    for prefix in ignored_prefixes:
+        if token.startswith(prefix):
+            return True
+    return False
 
 def surround_with_cmd(cmd, content):
     """ Returns the given content wrapped in the given latex command. """
@@ -102,6 +110,18 @@ def make_latex_diff(old, new):
         content = token[1:]
         # What should be added to the result for this token.
         to_add = ""
+
+        skip = False
+
+        # Some tokens will break latex when we add annotations, so filter them
+        # out and just show the text in the 'new' version of the document.
+        if should_ignore_token(content):
+            if code == "+":
+                # Show the token without annotation.
+                code = " "
+            elif code == "-":
+                # Don't emit the token at all so only the addition shows.
+                continue
 
         if ignore_token in token:
             # This is a file indicator, don't use it as it's fake files.
