@@ -45,6 +45,7 @@ cmd_end = "}"
 ignored_prefixes = [
   "\\mintinline",
   "\\captionof",
+  "\\begin",
 ]
 
 def should_ignore_token(token : str) -> str:
