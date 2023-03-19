@@ -41,12 +41,18 @@ removed_change_cmd = "\\removedChange{"
 # How to terminate the macros above.
 cmd_end = "}"
 
+stop_marker = "%diff-off"
+start_marker = "%diff-on"
+
 # minted will probably just print out injected code-as is, so ignore it.
 ignored_prefixes = [
   "\\mintinline",
   "\\captionof",
   "\\begin",
+  start_marker,
+  stop_marker,
 ]
+
 
 def should_ignore_token(token : str) -> str:
     for prefix in ignored_prefixes:
@@ -107,6 +113,8 @@ def make_latex_diff(old, new):
         lineterm="",
     )
 
+    should_diff = True
+
     for token in diff:
         # The first character is a diff marker such as '+', '-' or ' '.
         code = token[0]
@@ -115,7 +123,10 @@ def make_latex_diff(old, new):
         # What should be added to the result for this token.
         to_add = ""
 
-        skip = False
+        if content.startswith(stop_marker):
+            should_diff = False
+        if content.startswith(start_marker):
+            should_diff = True
 
         # Some tokens will break latex when we add annotations, so filter them
         # out and just show the text in the 'new' version of the document.
@@ -135,10 +146,16 @@ def make_latex_diff(old, new):
             continue
         elif code == "-":
             # This was removed, so annotate the latex code.
-            to_add = surround_with_cmd(removed_change_cmd, content)
+            if should_diff:
+                to_add = surround_with_cmd(removed_change_cmd, content)
+            else:
+                to_add = ""
         elif code == "+":
             # This was added, so annotate the latex code.
-            to_add = surround_with_cmd(added_change_cmd, content)
+            if should_diff:
+                to_add = surround_with_cmd(added_change_cmd, content)
+            else:
+                to_add = content
         elif code == " ":
             # Unchanged, just copy it over.
             to_add = content
