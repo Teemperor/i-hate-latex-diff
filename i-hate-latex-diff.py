@@ -60,29 +60,52 @@ def should_ignore_token(token : str) -> str:
             return True
     return False
 
-def surround_with_cmd(cmd, content):
-    """ Returns the given content wrapped in the given latex command. """
-    if content.endswith("\n"):
-        return cmd + content[:-1] + cmd_end + "\n"
-    return cmd + content + cmd_end
-
 
 def make_tokens(lines):
     """
     Creates the latex tokens feed to the diff tool.
     """
 
-    result = []
-    for line in lines:
-        # Split by space but preserve the space. This way we can concatenate
-        # at the end and recreate the original input.
-        tokens = line.split(" ")
-        for token in tokens[:-1]:
-            result.append(token + " ")
-        if tokens:
-            result.append(tokens[-1])
+    result = lines
+    split_on = [" "]
+
+    for splitter in split_on:
+        tmp_result = []
+        for tmp in result:
+            # Split by sep but preserve the sep. This way we can concatenate
+            # at the end and recreate the original input.
+            tokens = tmp.split(splitter)
+            for token in tokens[:-1]:
+                tmp_result.append(token + splitter)
+            if tokens:
+                tmp_result.append(tokens[-1])
+        result = tmp_result
     return result
 
+class TokenOutput:
+    def __init__(self):
+        self.result = ""
+        self.last_cmd = None
+
+    def append(self, content):
+        self.append_cmd(None, content)
+
+    def append_cmd(self, cmd, content):
+        if self.last_cmd == cmd:
+            # Just append 
+            cmd = None
+        else:
+            # Make sure the last command was terminated.
+            if self.last_cmd:
+                if self.result.endswith("\n"):   
+                    self.result = self.result[:-1] + cmd_end + "\n"
+                else:
+                    self.result += cmd_end
+            self.last_cmd = cmd
+        
+        if cmd is None:
+            cmd = ""
+        self.result += cmd + content
 
 def make_latex_diff(old, new):
     """
@@ -90,7 +113,7 @@ def make_latex_diff(old, new):
     code representing the 'new' changes with any differences highlighted.
     """
 
-    result = ""
+    result = TokenOutput()
 
     # Turn the lines into a set of (space-delimited) tokens.
     old_tokens = make_tokens(old)
@@ -115,13 +138,13 @@ def make_latex_diff(old, new):
 
     should_diff = True
 
+    last_code = None
+
     for token in diff:
         # The first character is a diff marker such as '+', '-' or ' '.
         code = token[0]
         # The raw original input.
         content = token[1:]
-        # What should be added to the result for this token.
-        to_add = ""
 
         if content.startswith(stop_marker):
             should_diff = False
@@ -138,6 +161,9 @@ def make_latex_diff(old, new):
                 # Don't emit the token at all so only the addition shows.
                 continue
 
+        # True if it's the same change code as before.
+        same_code = (code == last_code) if last_code else False
+
         if ignore_token in token:
             # This is a file indicator, don't use it as it's fake files.
             continue
@@ -147,24 +173,21 @@ def make_latex_diff(old, new):
         elif code == "-":
             # This was removed, so annotate the latex code.
             if should_diff:
-                to_add = surround_with_cmd(removed_change_cmd, content)
-            else:
-                to_add = ""
+                result.append_cmd(removed_change_cmd, content)
         elif code == "+":
             # This was added, so annotate the latex code.
             if should_diff:
-                to_add = surround_with_cmd(added_change_cmd, content)
+                result.append_cmd(added_change_cmd, content)
             else:
-                to_add = content
+                result.append(content)
         elif code == " ":
             # Unchanged, just copy it over.
-            to_add = content
+            result.append(content)
         else:
             print("Unknown difflib code: " + code)
             sys.exit(1)
-        result += to_add
 
-    return result
+    return result.result
 
 def maybe_define_latex_macros(content):
     definitions = r"""
