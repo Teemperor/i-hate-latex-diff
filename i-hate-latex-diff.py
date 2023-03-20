@@ -193,8 +193,8 @@ def maybe_define_latex_macros(content):
     definitions = r"""
 \usepackage{xcolor}
 \usepackage[normalem]{ulem}
-\newcommand{\removedChange}[1]{\textcolor{red}{\sout{#1}}}
-\newcommand{\addedChange}[1]{\textcolor{blue}{\uwave{#1}}}
+\newcommand{\removedChange}[1]{\colorlet{defaultcolor}{.}\color{red}{\sout{#1}}\color{defaultcolor}}
+\newcommand{\addedChange}[1]{\colorlet{defaultcolor}{.}\color{blue}{\uwave{#1}}\color{defaultcolor}}
     """
     token = r"""\begin{document}"""
 
