@@ -138,8 +138,6 @@ def make_latex_diff(old, new):
 
     should_diff = True
 
-    last_code = None
-
     for token in diff:
         # The first character is a diff marker such as '+', '-' or ' '.
         code = token[0]
@@ -161,11 +159,8 @@ def make_latex_diff(old, new):
                 # Don't emit the token at all so only the addition shows.
                 continue
 
-        # True if it's the same change code as before.
-        same_code = (code == last_code) if last_code else False
-
         if ignore_token in token:
-            # This is a file indicator, don't use it as it's fake files.
+            # This is a file name marker, ignore it.
             continue
         elif code == "@":
             # This is an annotation, ignore it.

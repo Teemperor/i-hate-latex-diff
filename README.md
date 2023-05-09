@@ -15,6 +15,26 @@ already suffering from.
 Note that all other files and the directory structure is preserved, so you can
 easily diff the output folder to see what the tool has annotated.
 
+**Usage**
+
+The script doesn't try to parse latex which is an unsolvable problem in computer
+science. Instead, it just does a plain diff on everything you changed between
+files and then annotates the changed tokens with the `removedChange` and
+`addedChange` commands.
+
+Now, this also means this script doesn't know if you're in some cursed
+latex environment where these commands might misbehave or not compile. So,
+to avoid this you can (and should) place custom markers in your changed source
+code to disable diffing. You can do this like this:
+
+```
+Unchanged latex text here.
+%diff-off
+\minted{This stuff here changed but commands in minted don't work}
+%diff-on
+More unchanged latex text.
+```
+
 **Available flags:**
 
 * `--nodefine`: Don't inject the default command definitions. You can add your
