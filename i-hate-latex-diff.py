@@ -10,15 +10,38 @@ import difflib
 import os.path as path
 from pathlib import Path
 
+def collect_ignored_files(folder):
+    file_name = os.path.join(folder, ".diff-ignore")
+    if not os.path.exists(file_name):
+        return []
+    with open(file_name, "r") as f:
+        result = []
+        for line in f.readlines():
+            result.append(line.strip())
+        return result
+
+def should_collect_latex_file(rel_path, to_ignore):
+    for ign in to_ignore:
+        if len(ign.strip()) == 0:
+            continue
+        if ign.startswith("#"):
+            continue
+        if rel_path.startswith(ign):
+            return False
+    return True
+
 # 
-def collect_latex_files(folder):
+def collect_latex_files(folder, to_ignore):
     """
     Searches the folder for latex files. Returns their paths relative to the
     specified folder.
     """
     result = []
     for path in Path(folder).rglob('*.tex'):
-        result.append(str(path.relative_to(folder)))
+        rel_path = str(path.relative_to(folder))
+        if should_collect_latex_file(rel_path, to_ignore=to_ignore):
+            print(f"Diffing {rel_path}")
+            result.append(str(path.relative_to(folder)))
     return result
 
 
@@ -49,6 +72,10 @@ ignored_prefixes = [
   "\\mintinline",
   "\\captionof",
   "\\begin",
+  "\\documentclass",
+  "\\let",
+  "\\usepackage",
+  "%",
   start_marker,
   stop_marker,
 ]
@@ -188,6 +215,8 @@ def maybe_define_latex_macros(content):
     definitions = r"""
 \usepackage{xcolor}
 \usepackage[normalem]{ulem}
+\providecommand{\removedChange}[1]{}
+\providecommand{\addedChange}[1]{}
 \renewcommand{\removedChange}[1]{\colorlet{defaultcolor}{.}\color{red}{\sout{#1}}\color{defaultcolor}}
 \renewcommand{\addedChange}[1]{\colorlet{defaultcolor}{.}\color{blue}{\uwave{#1}}\color{defaultcolor}}
     """
@@ -199,7 +228,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="i-hate-latex-diff",
         description="Who the fuck made latex",
-        epilog="What a messed up piece of shit",
     )
     parser.add_argument("old")
     parser.add_argument("new")
@@ -211,12 +239,12 @@ if __name__ == "__main__":
 
     if os.path.exists(args.output):
         if len(os.listdir(args.output)) != 0:
-            print("Output folder " + args.output + " exists.")
-            print("Not going to overwrite this.")
+            print("Output folder " + args.output + " exists. Delete it manually before re-running this command.")
             sys.exit(1)
     shutil.copytree(args.new, args.output, dirs_exist_ok=True)
 
-    expected = collect_latex_files(args.old)
+    to_ignore = collect_ignored_files(args.new)
+    expected = collect_latex_files(args.old, to_ignore=to_ignore)
     for latex_file in expected:
         if verbose:
             print("Processing " + latex_file)
@@ -228,7 +256,7 @@ if __name__ == "__main__":
         if filecmp.cmp(old_file, new_file):
             # If the files are equal, just read the file contents as-is.
             if verbose:
-                print("Skipping equial files " + latex_file)
+                print("Skipping equal files " + latex_file)
             new_content = "".join(get_lines(new_file))
         else:
             # Otherwise do a proper diff on different file contents.
