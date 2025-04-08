@@ -62,7 +62,7 @@ added_change_cmd = "\\addedChange{"
 # The macro that wraps removals.
 removed_change_cmd = "\\removedChange{"
 # How to terminate the macros above.
-cmd_end = "}"
+cmd_end = "} "
 
 stop_marker = "%diff-off"
 start_marker = "%diff-on"
@@ -208,6 +208,7 @@ def make_latex_diff(old, new):
         else:
             print("Unknown difflib code: " + code)
             sys.exit(1)
+    result.append("\n")
 
     return result.result
 
