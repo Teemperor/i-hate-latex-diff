@@ -76,6 +76,8 @@ ignored_prefixes = [
   "\\let",
   "\\usepackage",
   "%",
+  "\addedChange",
+  "\removedChange",
   start_marker,
   stop_marker,
 ]
@@ -119,6 +121,8 @@ class TokenOutput:
 
     def append_cmd(self, cmd, content):
         if self.last_cmd == cmd:
+            if cmd and content.endswith("\n"):
+                content = content.rstrip() + cmd_end + "\n" + cmd + " "
             # Just append 
             cmd = None
         else:
